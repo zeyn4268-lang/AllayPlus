@@ -66,7 +66,7 @@ jobs:
       - name: Find Shaded Jar
         id: vars
         run: |
-          SHADED_JAR_PATH=$(find server/build/libs -name "allay-server-*-shaded.jar" -print -quit)
+          SHADED_JAR_PATH=$(find server/build/libs -name "allayplus-server-*-shaded.jar" -print -quit)
           SHADED_JAR_NAME=$(basename "$SHADED_JAR_PATH")
           echo "shaded_jar_path=$SHADED_JAR_PATH" >> $GITHUB_OUTPUT
           echo "shaded_jar_name=$SHADED_JAR_NAME" >> $GITHUB_OUTPUT
@@ -79,7 +79,7 @@ jobs:
           path: ${{ steps.vars.outputs.shaded_jar_path }}
 
       - name: Publish to Maven Central
-        if: success() && github.event_name == 'push' && github.repository == 'AllayMC/Allay' && contains(github.ref_name, 'master')
+        if: success() && github.event_name == 'push' && github.repository == 'AllayPlus/AllayPlus' && contains(github.ref_name, 'master')
         run: |
           ./gradlew api:publishToMavenCentral
           ./gradlew server:publishToMavenCentral
@@ -95,7 +95,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git tag -f -a nightly -m "Nightly build"
-          git push origin -f --follow-tags nightly
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/AllayPlus/AllayPlus.git -f --follow-tags nightly
 
       - name: Update Nightly Build
         uses: AllayMC/deploy-nightly@v3.3.0
