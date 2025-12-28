@@ -27,9 +27,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT }}
+          persist-credentials: false
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -89,11 +94,17 @@ jobs:
 
       - name: Set Tag
         if: success() && github.event_name == 'push' && github.repository == 'AllayPlus/AllayPlus' && contains(github.ref_name, 'master')
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "GH_PAT is missing; cannot push nightly tag."
+            exit 1
+          fi
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git tag -f -a nightly -m "Nightly build"
-          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/AllayPlus/AllayPlus.git -f --follow-tags nightly
+          git push https://x-access-token:${GH_PAT}@github.com/AllayPlus/AllayPlus.git -f --follow-tags nightly
 
       - name: Update Nightly Build
         uses: AllayPlus/deploy-nightly@master
